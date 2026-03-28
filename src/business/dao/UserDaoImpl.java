@@ -3,6 +3,7 @@ package business.dao;
 import model.entity.User;
 import model.enums.UserRole;
 import util.DBConnection;
+import util.PasswordHasher;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,23 +12,32 @@ import java.sql.SQLException;
 
 public class UserDaoImpl implements IUserDao {
     @Override
-    public User login(String email, String password){
-        String sqlSelectUser = """
-                select * from Users where email = ? and password = ? and is_active = true
-                """;
-        try(Connection conn = DBConnection.openConnection();
-            PreparedStatement ps = conn.prepareStatement(sqlSelectUser)){
+    public User login(String email, String plainPassword) {
+        String sql = "SELECT * FROM Users WHERE email = ? AND is_active = true";
+
+        try (Connection conn = DBConnection.openConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, email);
-            ps.setString(2, password);
             ResultSet rs = ps.executeQuery();
 
-            if(rs.next()){
-                return new User(rs.getInt("user_id"), rs.getString("user_name"),rs.getString("email"),rs.getString("password"),rs.getString("phone"), UserRole.valueOf(rs.getString("user_role")),rs.getBoolean("is_active"));
-            }
+            if (rs.next()) {
+                String hashedPasswordFromDB = rs.getString("password");
 
+                if (PasswordHasher.checkPassword(plainPassword, hashedPasswordFromDB)) {
+                    return new User(
+                            rs.getInt("user_id"),
+                            rs.getString("user_name"),
+                            rs.getString("email"),
+                            hashedPasswordFromDB,
+                            rs.getString("phone"),
+                            UserRole.valueOf(rs.getString("user_role")),
+                            rs.getBoolean("is_active")
+                    );
+                }
+            }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.out.println("Lỗi");
         }
         return null;
     }
@@ -35,7 +45,7 @@ public class UserDaoImpl implements IUserDao {
     @Override
     public boolean register(User user){
         String sqlInsert = """
-                insert into Users(user_name, email, password, phone, user_role) values(?, ?, ?, ?, 'Customer')
+                insert into Users(user_name, email, password, phone, user_role) values(?, ?, ?, ?, 'CUSTOMER')
                 """;
 
         try(Connection conn = DBConnection.openConnection();

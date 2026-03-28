@@ -18,4 +18,14 @@ public class InputMethod {
             }
         }
     }
+
+    public static double getDouble() {
+        while (true) {
+            try {
+                return Double.parseDouble(getString());
+            } catch (NumberFormatException e) {
+                System.err.print("Lỗi định dạng số, vui lòng nhập lại: ");
+            }
+        }
+    }
 }

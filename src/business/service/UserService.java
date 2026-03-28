@@ -9,9 +9,9 @@ public class UserService {
     private UserDaoImpl userDao = new UserDaoImpl();
 
     public User handleLogin(String email, String plainPassword) {
-        User user = userDao.findByEmail(email);
+        User user = userDao.login(email, plainPassword);
 
-        if (user != null && PasswordHasher.checkPassword(plainPassword, user.getPassword())) {
+        if (user != null) {
             if (user.isActive()) {
                 return user;
             }
@@ -20,7 +20,11 @@ public class UserService {
     }
 
     public boolean handleRegister(User user) {
-        String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        if (userDao.findByEmail(user.getEmail()) != null) {
+            return false;
+        }
+//        String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        String hashedPassword = PasswordHasher.hashPassword(user.getPassword());
         user.setPassword(hashedPassword);
 
         return userDao.register(user);

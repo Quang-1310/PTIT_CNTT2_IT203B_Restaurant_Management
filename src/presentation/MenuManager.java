@@ -5,6 +5,11 @@ import util.InputMethod;
 
 import java.util.Scanner;
 
+import static presentation.ShowManagementCustomer.showManagementCustomer;
+import static presentation.ShowManagementEmployee.showManagementEmployee;
+import static presentation.ShowManagementMenu.showManagementMenu;
+import static presentation.ShowManagerTable.showManagerTable;
+
 public class MenuManager {
     public void showMenuManager(User user){
         int choice;
@@ -14,7 +19,8 @@ public class MenuManager {
                 |1. Quản lý danh sách bàn ăn                     |
                 |2. Quản lý thực đơn (đồ ăn, đồ uống).           |
                 |3. Quản lý nhân viên                            |
-                |4. Thoát                                        |
+                |4. Quản lý khách hàng                           |
+                |5. Thoát                                        |
                 ==================================================
                 """);
 
@@ -28,70 +34,10 @@ public class MenuManager {
                     showManagementMenu();
                     break;
                 case 3:
-                    break;
-                default:
-                    System.out.println("Lựa chọn không hợp lệ");
-
-            }
-        }while(choice != 6);
-    }
-
-    public static void showManagerTable(){
-        int choice;
-        do{
-            System.out.println("""
-                ================== MENU MANAGEMENT TABLE ==================
-                |1. Xem danh sách các bàn                                 |
-                |2. Thêm bàn mới                                          |
-                |3. Cập nhật bàn                                          |
-                |4. Xoá bàn                                               |
-                |5. Tìm kiếm bàn                                          |
-                ===========================================================
-                """);
-
-            System.out.print("Lựa chọn của bạn: ");
-            choice = InputMethod.getInteger();
-            switch (choice){
-                case 1:
-                    break;
-                case 2:
-                    break;
-                case 3:
+                    showManagementEmployee();
                     break;
                 case 4:
-                    break;
-                case 5:
-                    break;
-                default:
-                    System.out.println("Lựa chọn không hợp lệ");
-
-            }
-        }while(choice != 5);
-    }
-
-    public static void showManagementMenu(){
-        int choice;
-        do{
-            System.out.println("""
-                ================== MENU MANAGEMENT TABLE ==================
-                |1. Xem danh sách thực đơn                                |
-                |2. Thêm món ăn                                           |
-                |3. Cập món ăn                                            |
-                |4. Xoá món ăn                                            |
-                |5. Tìm món ăn                                            |
-                ===========================================================
-                """);
-
-            System.out.print("Lựa chọn của bạn: ");
-            choice = InputMethod.getInteger();
-            switch (choice){
-                case 1:
-                    break;
-                case 2:
-                    break;
-                case 3:
-                    break;
-                case 4:
+                    showManagementCustomer();
                     break;
                 case 5:
                     break;

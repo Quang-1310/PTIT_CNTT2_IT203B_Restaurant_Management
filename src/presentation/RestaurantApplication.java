@@ -9,10 +9,6 @@ import validate.Validate;
 
 public class RestaurantApplication {
     private UserService userService = new UserService();
-    public static void main(String[] args) {
-        RestaurantApplication app = new RestaurantApplication();
-        app.start();
-    }
 
     public void start() {
         int choice;
@@ -34,7 +30,7 @@ public class RestaurantApplication {
                     System.out.println("Tạm biệt! Hẹn gặp lại");
                     break;
                 default:
-                    System.out.println("Lựa chọn không hợp lệ.");
+                    System.out.println(Validate.ANSI_RED + "Lựa chọn không hợp lệ." + Validate.ANSI_RESET);
             }
         } while (choice != 3);
     }
@@ -46,7 +42,7 @@ public class RestaurantApplication {
             System.out.print("Email: ");
             email = InputMethod.getString();
             if(!Validate.isValidEmail(email)){
-                System.out.println(Validate.ANSI_RED + "Định dạng email không hợp lệ. Vui lòng nhập lại.");
+                System.out.println(Validate.ANSI_RED + "Định dạng email không hợp lệ. Vui lòng nhập lại." + Validate.ANSI_RESET);
             }
             else {
                 break;
@@ -57,7 +53,7 @@ public class RestaurantApplication {
             System.out.print("Password: ");
             pass = InputMethod.getString();
             if(Validate.isEmpty(pass)){
-                System.out.println(Validate.ANSI_RED + "Mật khẩu không được để trống. Vui lòng nhập lại.");
+                System.out.println(Validate.ANSI_RED + "Mật khẩu không được để trống. Vui lòng nhập lại." + Validate.ANSI_RESET);
             }
             else {
                 break;
@@ -67,10 +63,10 @@ public class RestaurantApplication {
 
         User user = userService.handleLogin(email, pass);
         if (user != null) {
-            System.out.println(Validate.ANSI_GREEN + "Đăng nhập thành công");
+            System.out.println(Validate.ANSI_GREEN + "Đăng nhập thành công" + Validate.ANSI_RESET);
             redirectByRole(user);
         } else {
-            System.out.println(Validate.ANSI_RED + "Sai tài khoản hoặc mật khẩu bị khóa!");
+            System.out.println(Validate.ANSI_RED + "Sai tài khoản hoặc mật khẩu bị khóa!" + Validate.ANSI_RESET);
         }
     }
 
@@ -99,7 +95,7 @@ public class RestaurantApplication {
             System.out.print("User name: ");
             userName = InputMethod.getString();
             if(Validate.isEmpty(userName)){
-                System.out.println(Validate.ANSI_RED + "User name không được để trống. Vui lòng nhập lại.");
+                System.out.println(Validate.ANSI_RED + "User name không được để trống. Vui lòng nhập lại." + Validate.ANSI_RESET);
             }
             else {
                 break;
@@ -110,7 +106,7 @@ public class RestaurantApplication {
             System.out.print("Phone: ");
             phone = InputMethod.getString();
             if(!Validate.isValidPhone(phone)){
-                System.out.println(Validate.ANSI_RED + "Định dạng SĐT không hợp lệ. Vui lòng nhập lại.");
+                System.out.println(Validate.ANSI_RED + "Định dạng SĐT không hợp lệ. Vui lòng nhập lại." + Validate.ANSI_RESET);
             }
             else {
                 break;
@@ -121,7 +117,7 @@ public class RestaurantApplication {
             System.out.print("Email: ");
             email = InputMethod.getString();
             if(!Validate.isValidEmail(email)){
-                System.out.println(Validate.ANSI_RED + "Định dạng email không hợp lệ. Vui lòng nhập lại.");
+                System.out.println(Validate.ANSI_RED + "Định dạng email không hợp lệ. Vui lòng nhập lại." + Validate.ANSI_RESET);
             }
             else {
                 break;
@@ -132,7 +128,7 @@ public class RestaurantApplication {
             System.out.print("Password: ");
             pass = InputMethod.getString();
             if(Validate.isEmpty(pass)){
-                System.out.println(Validate.ANSI_RED + "Mật khẩu không được để trống. Vui lòng nhập lại.");
+                System.out.println(Validate.ANSI_RED + "Mật khẩu không được để trống. Vui lòng nhập lại." + Validate.ANSI_RESET);
             }
             else {
                 break;
@@ -143,9 +139,9 @@ public class RestaurantApplication {
             System.out.print("Password Confirm: ");
             passConfirm = InputMethod.getString();
             if(Validate.isEmpty(passConfirm)){
-                System.out.println(Validate.ANSI_RED + "Mật khẩu xác nhận không được để trống. Vui lòng nhập lại.");
+                System.out.println(Validate.ANSI_RED + "Mật khẩu xác nhận không được để trống. Vui lòng nhập lại." + Validate.ANSI_RESET);
             } else if (!passConfirm.equals(pass)) {
-                System.out.println(Validate.ANSI_RED + "Mật khẩu xác nhận không khớp. Vui lòng nhập lại.");
+                System.out.println(Validate.ANSI_RED + "Mật khẩu xác nhận không khớp. Vui lòng nhập lại." + Validate.ANSI_RESET);
             } else {
                 break;
             }
@@ -161,9 +157,9 @@ public class RestaurantApplication {
 
         boolean isRegister = userService.handleRegister(newUser);
         if(isRegister){
-            System.out.println(Validate.ANSI_GREEN + "Đăng ký tài khoản thành công");
+            System.out.println(Validate.ANSI_GREEN + "Đăng ký tài khoản thành công" + Validate.ANSI_RESET);
         }else {
-            System.out.println(Validate.ANSI_RED + "Đăng ký thất bại");
+            System.out.println(Validate.ANSI_RED + "Đăng ký thất bại. Email đã tồn tại" + Validate.ANSI_RESET);
         }
 
     }
