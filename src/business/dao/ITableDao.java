@@ -14,4 +14,6 @@ public interface ITableDao {
     boolean deleteTable(int id);
     Table findTableById(int id);
     List<Table> findTableByStatus(StatusTable status);
+
+    boolean updateTableStatus(int tableId, StatusTable status);
 }

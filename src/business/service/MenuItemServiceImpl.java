@@ -38,4 +38,9 @@ public class MenuItemServiceImpl implements IMenuItemService {
     public List<Menu_Item> findItemByName(String name) {
         return menuItemDao.findItemByName(name);
     }
+
+    @Override
+    public int getStockById(int itemId) {
+        return menuItemDao.getStockById(itemId);
+    }
 }

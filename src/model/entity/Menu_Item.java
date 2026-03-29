@@ -64,4 +64,9 @@ public class Menu_Item {
         System.out.printf("| %-10s | %-25s | %-10s | %-15s | %-15s |\n",
                 this.itemID, this.itemName, this.stock, this.type, this.price);
     }
+
+    public void viewCustomer(){
+        System.out.printf("| %-25s | %-10s | %-15s | %-15s |\n",
+                this.itemName, this.stock, this.type, this.price);
+    }
 }

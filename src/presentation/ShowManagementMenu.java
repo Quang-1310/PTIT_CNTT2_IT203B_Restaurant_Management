@@ -68,6 +68,7 @@ public class ShowManagementMenu {
     }
 
     private static void addItem(){
+        List<Menu_Item> menuItemList = menuItemService.getAllMenuItem();
         String itemName;
         int stock = 0;
         TypeItem type = null;
@@ -82,6 +83,13 @@ public class ShowManagementMenu {
                 break;
             }
         }while(true);
+
+        for(Menu_Item item: menuItemList){
+            if(item.getItemName().toLowerCase().equals(itemName.toLowerCase())){
+                System.out.println(Validate.ANSI_YELLOW + "Món ăn đã tồn tại" + Validate.ANSI_RESET);
+                return;
+            }
+        }
 
         do {
             System.out.print("Mời bạn nhập số lượng: ");

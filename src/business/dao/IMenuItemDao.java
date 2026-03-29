@@ -12,4 +12,6 @@ public interface IMenuItemDao {
     boolean deleteMenuItem(int id);
     Menu_Item findItemById(int id);
     List<Menu_Item> findItemByName(String name);
+    int getStockById(int itemId);
+    boolean updateStock(int itemId, int quantity);
 }

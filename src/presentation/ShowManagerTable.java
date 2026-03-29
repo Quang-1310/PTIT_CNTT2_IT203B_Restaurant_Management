@@ -88,7 +88,7 @@ public class ShowManagerTable {
 
     private static void addTable() {
         int seatCapacity;
-        StatusTable status = StatusTable.EMPTY;
+        StatusTable status = StatusTable.FREE;
 
         do {
             System.out.print("Nhập sức chứa (số ghế): ");
@@ -140,16 +140,16 @@ public class ShowManagerTable {
 
         do {
             System.out.println("Chọn trạng thái bàn mới:");
-            System.out.println("1. EMPTY (Bàn trống)");
-            System.out.println("2. BOOKED (Đã đặt)");
+            System.out.println("1. FREE (Bàn trống)");
+            System.out.println("2. OCCUPIED (Đã đặt)");
             System.out.print("Lựa chọn: ");
             int subChoice = InputMethod.getInteger();
             switch (subChoice){
                 case 1:
-                    newStatus = StatusTable.EMPTY;
+                    newStatus = StatusTable.FREE;
                     break;
                 case 2:
-                    newStatus = StatusTable.BOOKED;
+                    newStatus = StatusTable.OCCUPIED ;
                     break;
                 default:
                     System.out.println(Validate.ANSI_RED + "Lựa chọn không hợp lệ." + Validate.ANSI_RESET);
@@ -222,14 +222,14 @@ public class ShowManagerTable {
         do {
             System.out.println("Nhập trạng thái bàn cần tìm (1 hoặc 2): ");
             System.out.print("""
-                    1. EMPTY
-                    2. BOOKED
+                    1. FREE
+                    2. OCCUPIED
                     """);
             System.out.print("Lựa chọn của bạn: ");
             int subChoice = InputMethod.getInteger();
             switch (subChoice){
                 case 1:
-                    tableList = tableService.findTableByStatus(StatusTable.EMPTY);
+                    tableList = tableService.findTableByStatus(StatusTable.FREE);
                     printTableLineHeader();
                     for(Table table: tableList){
                         table.displayData();
@@ -237,7 +237,7 @@ public class ShowManagerTable {
                     printTableLineFooter();
                     break;
                 case 2:
-                    tableList = tableService.findTableByStatus(StatusTable.BOOKED);
+                    tableList = tableService.findTableByStatus(StatusTable.OCCUPIED);
                     printTableLineHeader();
                     for(Table table: tableList){
                         table.displayData();

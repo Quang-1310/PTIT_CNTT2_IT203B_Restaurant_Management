@@ -170,4 +170,35 @@ public class MenuItemImpl implements IMenuItemDao{
         }
         return menuItemList;
     }
+
+    @Override
+    public int getStockById(int itemId) {
+        String sql = "SELECT stock FROM Menu_items WHERE item_id = ?";
+        try (Connection conn = DBConnection.openConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, itemId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("stock");
+            }
+        } catch (SQLException e) {
+            System.out.println(Validate.ANSI_RED + "Lỗi lấy stock: " + e.getMessage() + Validate.ANSI_RESET);
+        }
+        return -1;
+    }
+
+    @Override
+    public boolean updateStock(int itemId, int quantity) {
+        String sql = "UPDATE Menu_items SET stock = stock - ? WHERE item_id = ? AND stock >= ?";
+        try (Connection conn = DBConnection.openConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, quantity);
+            ps.setInt(2, itemId);
+            ps.setInt(3, quantity);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            return false;
+        }
+    }
 }

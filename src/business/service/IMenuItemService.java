@@ -12,4 +12,5 @@ public interface IMenuItemService {
     boolean deleteItem(int id);
     Menu_Item findItemById(int id);
     List<Menu_Item> findItemByName(String name);
+    int getStockById(int itemId);
 }

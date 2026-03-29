@@ -44,4 +44,5 @@ public class Table {
         System.out.printf("| %-10s | %-10s | %-10s |\n",
                 this.tableId, this.seatCapacity, this.status);
     }
+
 }

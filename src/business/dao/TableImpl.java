@@ -132,4 +132,18 @@ public class TableImpl implements ITableDao{
         }
         return tableList;
     }
+
+    @Override
+    public boolean updateTableStatus(int tableId, StatusTable status) {
+        String sql = "UPDATE tables SET status = ? WHERE table_id = ?";
+        try (Connection conn = DBConnection.openConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status.name());
+            ps.setInt(2, tableId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.out.println("Lỗi update trạng thái bàn: " + e.getMessage());
+            return false;
+        }
+    }
 }

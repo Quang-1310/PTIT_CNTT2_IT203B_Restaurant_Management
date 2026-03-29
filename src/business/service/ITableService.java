@@ -12,4 +12,6 @@ public interface ITableService {
     boolean deleteTable(int id);
     Table findTableById(int id);
     List<Table> findTableByStatus(StatusTable status);
+
+    int bookTable(int userId, int tableId);
 }
