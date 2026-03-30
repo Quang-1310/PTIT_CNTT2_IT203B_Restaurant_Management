@@ -79,4 +79,9 @@ public class User {
     public void setActive(boolean active) {
         isActive = active;
     }
+
+    public void displayData(){
+        System.out.printf("| %-10s | %-25s | %-25s | %-15s | %-15s | %-10s | %-10s |\n",
+                this.userID, this.userName, this.email, this.password.substring(0,10), this.phone, this.role, this.isActive);
+    }
 }

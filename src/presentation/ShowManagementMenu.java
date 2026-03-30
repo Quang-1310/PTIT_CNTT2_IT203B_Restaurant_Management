@@ -43,7 +43,34 @@ public class ShowManagementMenu {
                     findItemByName();
                     break;
                 case 6:
+                    boolean flag = false;
+                    do{
+                        System.out.println("Xác nhận thoát:");
+                        System.out.print("""
+                                1. Thoát
+                                2. Huỷ
+                                """);
+                        System.out.print("Lựa chọn của bạn: ");
+                        int subChoice = InputMethod.getInteger();
+                        switch (subChoice){
+                            case 1:
+                                flag = true;
+                                System.out.println("Tạm biệt! Hẹn gặp lại");
+                                break;
+                            case 2:
+                                choice = 0;
+                                break;
+                            default:
+                                System.out.println(Validate.ANSI_RED + "Lựa chọn không hợp lệ." + Validate.ANSI_RESET);
+                        }
+                        break;
+                    }while(true);
+
+                    if(!flag){
+                        continue;
+                    }
                     break;
+
                 default:
                     System.out.println("Lựa chọn không hợp lệ");
 
@@ -126,7 +153,7 @@ public class ShowManagementMenu {
         do {
             System.out.print("Mời bạn nhập giá: ");
             price = InputMethod.getDouble();
-            if(price < 0){
+            if(price <= 0){
                 System.out.println(Validate.ANSI_RED + "Giá món ăn không hợp lệ" + Validate.ANSI_RESET);
             }else {
                 break;

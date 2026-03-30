@@ -3,6 +3,7 @@ package business.service;
 import business.dao.MenuItemImpl;
 import business.dao.OrderDetailImpl;
 import business.dao.OrderImpl;
+import model.entity.Order;
 import model.entity.OrderDetailStatus;
 import model.entity.Order_Detail;
 import util.DBConnection;
@@ -56,4 +57,20 @@ public class OrderService implements IOrderService{
     public List<OrderDetailStatus> getTrackingDetails(int orderId) {
         return orderDetailDao.getTrackingDetails(orderId);
     }
+
+    @Override
+    public boolean cancelItem(int id) {
+        return orderDetailDao.cancelItem(id);
+    }
+
+    @Override
+    public int findActiveOrderIdByUserId(int userId) {
+        return orderDao.findActiveOrderIdByUserId(userId);
+    }
+
+    @Override
+    public List<Order> findActiveOrdersByUserId(int userId) {
+        return orderDao.findActiveOrdersByUserId(userId);
+    }
+
 }

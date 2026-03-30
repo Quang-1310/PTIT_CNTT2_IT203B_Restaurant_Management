@@ -13,7 +13,7 @@ public class Validate {
     public static final String ANSI_CYAN = "\u001B[36m";
 
     private static final String PHONE_REGEX = "^0\\d{9}$";
-    private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+    private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.com$";
     public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public static boolean isValidPhone(String phone) {

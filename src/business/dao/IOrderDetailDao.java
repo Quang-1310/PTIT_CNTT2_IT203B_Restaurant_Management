@@ -15,4 +15,6 @@ public interface IOrderDetailDao {
     List<Order_Detail> getDetailsByOrderId(int orderId);
 
     List<OrderDetailStatus> getTrackingDetails(int orderId);
+
+    boolean cancelItem(int id);
 }

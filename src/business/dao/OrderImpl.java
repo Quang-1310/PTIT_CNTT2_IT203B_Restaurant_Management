@@ -1,8 +1,12 @@
 package business.dao;
 
+import model.entity.Order;
+import model.entity.Order_Detail;
 import util.DBConnection;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OrderImpl implements IOrderDao{
     public int createOrder(int userId, int tableId) {
@@ -26,4 +30,67 @@ public class OrderImpl implements IOrderDao{
             return 0;
         }
     }
+
+    @Override
+    public List<Order_Detail> getInvoiceDetails(int orderId) {
+        List<Order_Detail> list = new ArrayList<>();
+        String sql = """
+        SELECT od.*, mi.item_name 
+        FROM Order_Details od
+        JOIN Menu_items mi ON od.item_id = mi.item_id
+        WHERE od.order_id = ?
+    """;
+        try (Connection conn = DBConnection.openConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Order_Detail detail = new Order_Detail();
+                detail.setOrderDetailId(rs.getInt("order_detail_id"));
+                detail.setQuantity(rs.getInt("quantity"));
+                detail.setPriceAtOrder(rs.getDouble("price_at_order"));
+
+                list.add(detail);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public int findActiveOrderIdByUserId(int userId) {
+        String sql = "SELECT order_id FROM Orders WHERE user_id = ? AND status = 'PENDING' LIMIT 1";
+        try (Connection conn = DBConnection.openConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("order_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public List<Order> findActiveOrdersByUserId(int userId) {
+        List<Order> activeOrders = new ArrayList<>();
+        String sql = "SELECT * FROM Orders WHERE user_id = ? AND status = 'PENDING'";
+        try (Connection conn = DBConnection.openConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Order order = new Order();
+                order.setOrderID(rs.getInt("order_id"));
+                order.setTableId(rs.getInt("table_id"));
+                activeOrders.add(order);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return activeOrders;
+    }
+
+
 }

@@ -23,10 +23,14 @@ public class UserService {
         if (userDao.findByEmail(user.getEmail()) != null) {
             return false;
         }
-//        String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+
         String hashedPassword = PasswordHasher.hashPassword(user.getPassword());
         user.setPassword(hashedPassword);
 
         return userDao.register(user);
+    }
+
+    public User findByEmail(String email){
+        return userDao.findByEmail(email);
     }
 }

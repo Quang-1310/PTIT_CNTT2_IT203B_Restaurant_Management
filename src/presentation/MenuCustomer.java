@@ -24,6 +24,8 @@ public class MenuCustomer {
     private static OrderService orderService = new OrderService();
     private int currentOrderId = 0;
     public void showMenuCustomer(User user){
+        this.currentOrderId = orderService.findActiveOrderIdByUserId(user.getUserID());
+
         int choice;
         do{
             System.out.println("""
@@ -31,9 +33,10 @@ public class MenuCustomer {
                 |1. Xem thực đơn                                  |
                 |2. Đặt bàn                                       |
                 |3. Gọi món                                       |
-                |4. Theo dõi trạng thái món ăn                    |
-                |5. Thanh toán                                    |
-                |6. Thoát                                         |
+                |4. Huỷ món                                       |
+                |5. Theo dõi trạng thái món ăn                    |
+                |6. Thanh toán                                    |
+                |7. Thoát                                         |
                 ===================================================
                 """);
 
@@ -47,20 +50,56 @@ public class MenuCustomer {
                     bookingTable(user);
                     break;
                 case 3:
-                    orderItem(user, currentOrderId);
+                    int orderIdForOrder = selectActiveOrder(user);
+                    if (orderIdForOrder == 0) {
+                        System.out.println(Validate.ANSI_YELLOW + "Vui lòng đặt bàn trước khi gọi món!" + Validate.ANSI_RESET);
+                    } else {
+                        orderItem(user, orderIdForOrder);
+                    }
                     break;
                 case 4:
-                    viewOrderDetailStatus(currentOrderId);
+                    int orderIdToCancel = getOrderIdFromUser(user, "hủy món");
+                    if (orderIdToCancel > 0) cancelItem(orderIdToCancel);
                     break;
                 case 5:
+                    int orderIdToTrack = getOrderIdFromUser(user, "theo dõi");
+                    if (orderIdToTrack > 0) viewOrderDetailStatus(orderIdToTrack);
                     break;
                 case 6:
+                    break;
+                case 7:
+                    boolean flag = false;
+                    do{
+                        System.out.println("Xác nhận thoát:");
+                        System.out.print("""
+                                1. Thoát
+                                2. Huỷ
+                                """);
+                        System.out.print("Lựa chọn của bạn: ");
+                        int subChoice = InputMethod.getInteger();
+                        switch (subChoice){
+                            case 1:
+                                flag = true;
+                                System.out.println("Tạm biệt! Hẹn gặp lại");
+                                break;
+                            case 2:
+                                choice = 0;
+                                break;
+                            default:
+                                System.out.println(Validate.ANSI_RED + "Lựa chọn không hợp lệ." + Validate.ANSI_RESET);
+                        }
+                        break;
+                    }while(true);
+
+                    if(!flag){
+                        continue;
+                    }
                     break;
                 default:
                     System.out.println("Lựa chọn không hợp lệ");
 
             }
-        }while(choice != 6);
+        }while(choice != 7);
 
 
     }
@@ -140,9 +179,14 @@ public class MenuCustomer {
                 int currentStock = menuItemService.getStockById(itemId);
                 if (quantity <= 0) {
                     System.out.println(Validate.ANSI_RED + "Số lượng phải lớn hơn 0!" + Validate.ANSI_RESET);
-                } else if (quantity > currentStock) {
+                }
+                else if (currentStock == 0) {
+                    System.out.println(Validate.ANSI_YELLOW + "Đã hết hàng" + Validate.ANSI_RESET);
+                    return;
+                }
+                else if (quantity > currentStock) {
                     System.out.println(Validate.ANSI_RED + "Rất tiếc, trong kho chỉ còn " + item.getStock() + " sản phẩm. Vui lòng nhập lại." + Validate.ANSI_RESET);
-                } else {
+                }  else {
                     break;
                 }
             } while (true);
@@ -208,6 +252,87 @@ public class MenuCustomer {
         }
     }
 
+    private static void cancelItem(int orderId){
+        List<OrderDetailStatus> details = orderService.getTrackingDetails(orderId);
+        if (details.isEmpty()) {
+            System.out.println(Validate.ANSI_YELLOW + "Bàn này chưa có món nào." + Validate.ANSI_RESET);
+            return;
+        }
+        int id;
+        do {
+            System.out.print("Nhập mã món ăn muốn huỷ: ");
+            id = InputMethod.getInteger();
+            if(id <= 0){
+                System.out.println(Validate.ANSI_YELLOW + "Mã món ăn không hợp lệ. Vui lòng nhập lại" + Validate.ANSI_RESET);
+            }else {
+                break;
+            }
+        }while(true);
+
+        boolean isCancel = orderService.cancelItem(id);
+        if(isCancel){
+            System.out.println(Validate.ANSI_GREEN + "Huỷ món thành công" + Validate.ANSI_RESET);
+        }else {
+            System.out.println(Validate.ANSI_YELLOW + "Huỷ món thất bại. Không tìm thấy món ăn hoặc món ăn đã được chế biến xong" + Validate.ANSI_RESET);
+        }
+    }
+
+    // lấy orderId để gọi món tương ứng với bàn
+    private int selectActiveOrder(User user) {
+        List<Order> activeOrders = orderService.findActiveOrdersByUserId(user.getUserID());
+
+        if (activeOrders.isEmpty()) {
+            return 0;
+        }
+
+        if (activeOrders.size() == 1) {
+            return activeOrders.get(0).getOrderID();
+        }
+
+        System.out.println(Validate.ANSI_CYAN + "Bạn đang đặt nhiều bàn. Vui lòng chọn bàn muốn thao tác:" + Validate.ANSI_RESET);
+        for (int i = 0; i < activeOrders.size(); i++) {
+            System.out.printf("%d. Bàn số: %d (Mã đơn: %d)\n",
+                    (i + 1), activeOrders.get(i).getTableId(), activeOrders.get(i).getOrderID());
+        }
+
+        int choice;
+        do {
+            System.out.print("Lựa chọn của bạn (1-" + activeOrders.size() + "): ");
+            choice = InputMethod.getInteger();
+        } while (choice < 1 || choice > activeOrders.size());
+
+        return activeOrders.get(choice - 1).getOrderID();
+    }
+
+    // Lấy orderId để huỷ món và xem trạng thái theo từng bàn
+    private int getOrderIdFromUser(User user, String actionName) {
+        List<Order> activeOrders = orderService.findActiveOrdersByUserId(user.getUserID());
+
+        if (activeOrders.isEmpty()) {
+            System.out.println(Validate.ANSI_YELLOW + "Bạn cần đặt bàn trước khi thực hiện " + actionName + "!" + Validate.ANSI_RESET);
+            return 0;
+        }
+
+        if (activeOrders.size() == 1) {
+            return activeOrders.get(0).getOrderID();
+        }
+
+        System.out.println("\n--- BẠN ĐANG ĐẶT NHIỀU BÀN ---");
+        for (int i = 0; i < activeOrders.size(); i++) {
+            System.out.printf("%d. Bàn số: %d (Mã đơn: %d)\n",
+                    (i + 1), activeOrders.get(i).getTableId(), activeOrders.get(i).getOrderID());
+        }
+
+        int choice;
+        do {
+            System.out.print("Chọn bàn để " + actionName + " (1-" + activeOrders.size() + "): ");
+            choice = InputMethod.getInteger();
+        } while (choice < 1 || choice > activeOrders.size());
+
+        return activeOrders.get(choice - 1).getOrderID();
+    }
+
+
     // Bảng menu
     private static void printTableMenuHeader() {
         System.out.printf("+%s+%s+%s+%s+%s+\n",
@@ -239,13 +364,12 @@ public class MenuCustomer {
 
     // Theo dõi trạng thái món ăn
     private static void printStatusItemHeader() {
-        String line = "+" + "-".repeat(27) + "+" + "-".repeat(12) + "+" + "-".repeat(17) + "+";
-        System.out.println(line);
-        System.out.printf("| %-25s | %-10s | %-15s |\n", "Tên món", "Số lượng", "Trạng thái");
-        System.out.println(line);
+        System.out.printf("+%s+%s+%s+%s+\n", "-".repeat(12), "-".repeat(27), "-".repeat(12), "-".repeat(17));
+        System.out.printf("| %-10s | %-25s | %-10s | %-15s |\n","Mã món", "Tên món", "Số lượng", "Trạng thái");
+        System.out.printf("+%s+%s+%s+%s+\n", "-".repeat(12), "-".repeat(27), "-".repeat(12), "-".repeat(17));
     }
 
     private static void printStatusItemFooter() {
-        System.out.println("+" + "-".repeat(27) + "+" + "-".repeat(12) + "+" + "-".repeat(17) + "+");
+        System.out.printf("+%s+%s+%s+%s+\n", "-".repeat(12), "-".repeat(27), "-".repeat(12), "-".repeat(17));
     }
 }

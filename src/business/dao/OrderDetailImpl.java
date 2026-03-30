@@ -4,8 +4,10 @@ import model.entity.OrderDetailStatus;
 import model.entity.Order_Detail;
 import model.enums.StatusOrderDetail;
 import util.DBConnection;
+import validate.Validate;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +17,7 @@ public class OrderDetailImpl implements IOrderDetailDao{
         List<Order_Detail> orderDetails = new ArrayList<>();
 
         String sqlGetDetail = """
-                SELECT order_detail_id, order_id, item_id, quantity, price_at_order, item_status FROM Order_Details
+                SELECT * FROM Order_Details
                 """;
 
         try (Connection conn = DBConnection.openConnection();
@@ -23,14 +25,18 @@ public class OrderDetailImpl implements IOrderDetailDao{
 
             ResultSet rs = ps.executeQuery(sqlGetDetail);
             while (rs.next()) {
-                int id = rs.getInt("order_detail_id");
-                int orderId = rs.getInt("order_id");
-                int itemId = rs.getInt("item_id");
-                int quantity = rs.getInt("quantity");
-                double priceAtOrder = rs.getDouble("price_at_order");
-                StatusOrderDetail status = StatusOrderDetail.valueOf(rs.getString("item_status"));
+                Timestamp ts = rs.getTimestamp("created_at");
+                LocalDateTime ldt = (ts != null) ? ts.toLocalDateTime() : null;
 
-                Order_Detail orderDetail = new Order_Detail(id, orderId, itemId, quantity, priceAtOrder, status);
+                Order_Detail orderDetail = new Order_Detail(
+                        rs.getInt("order_detail_id"),
+                        rs.getInt("order_id"),
+                        rs.getInt("item_id"),
+                        rs.getInt("quantity"),
+                        rs.getDouble("price_at_order"),
+                        ldt,
+                        StatusOrderDetail.valueOf(rs.getString("item_status"))
+                );
                 orderDetails.add(orderDetail);
             }
         } catch (SQLException e) {
@@ -65,7 +71,7 @@ public class OrderDetailImpl implements IOrderDetailDao{
         List<Order_Detail> orderDetails = new ArrayList<>();
 
         String sqlGetDetail = """
-                SELECT order_detail_id, order_id, item_id, quantity, price_at_order, item_status FROM Order_Details where order_id = ?
+                SELECT * FROM Order_Details WHERE order_id = ?
                 """;
 
         try (Connection conn = DBConnection.openConnection();
@@ -75,14 +81,17 @@ public class OrderDetailImpl implements IOrderDetailDao{
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                int order_detail_id = rs.getInt("order_detail_id");
-                int order_id = rs.getInt("order_id");
-                int itemId = rs.getInt("item_id");
-                int quantity = rs.getInt("quantity");
-                double priceAtOrder = rs.getDouble("price_at_order");
-                StatusOrderDetail status = StatusOrderDetail.valueOf(rs.getString("item_status"));
-
-                Order_Detail orderDetail = new Order_Detail(order_detail_id, order_id, itemId, quantity, priceAtOrder, status);
+                Timestamp ts = rs.getTimestamp("created_at");
+                LocalDateTime ldt = (ts != null) ? ts.toLocalDateTime() : null;
+                Order_Detail orderDetail = new Order_Detail(
+                        rs.getInt("order_detail_id"),
+                        rs.getInt("order_id"),
+                        rs.getInt("item_id"),
+                        rs.getInt("quantity"),
+                        rs.getDouble("price_at_order"),
+                        ldt,
+                        StatusOrderDetail.valueOf(rs.getString("item_status"))
+                );
                 orderDetails.add(orderDetail);
             }
         } catch (SQLException e) {
@@ -96,11 +105,11 @@ public class OrderDetailImpl implements IOrderDetailDao{
     public List<OrderDetailStatus> getTrackingDetails(int orderId) {
         List<OrderDetailStatus> list = new ArrayList<>();
         String sql = """
-        SELECT mi.item_name, od.quantity, od.item_status 
-        FROM order_details od
-        JOIN menu_items mi ON od.item_id = mi.item_id
-        WHERE od.order_id = ?
-    """;
+            SELECT od.order_detail_id, mi.item_name, od.quantity, od.item_status 
+            FROM order_details od
+            JOIN menu_items mi ON od.item_id = mi.item_id
+            WHERE od.order_id = ?
+        """;
 
         try (Connection conn = DBConnection.openConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -110,6 +119,7 @@ public class OrderDetailImpl implements IOrderDetailDao{
 
             while (rs.next()) {
                 list.add(new OrderDetailStatus(
+                        rs.getInt("order_detail_id"),
                         rs.getString("item_name"),
                         rs.getInt("quantity"),
                         StatusOrderDetail.valueOf(rs.getString("item_status"))
@@ -120,4 +130,27 @@ public class OrderDetailImpl implements IOrderDetailDao{
         }
         return list;
     }
+
+    @Override
+    public boolean cancelItem(int orderDetailId) {
+        String sqlDelete = "DELETE FROM Order_Details WHERE order_detail_id = ? AND item_status = 'PENDING'";
+
+        try (Connection conn = DBConnection.openConnection();
+             PreparedStatement ps = conn.prepareStatement(sqlDelete)) {
+
+            ps.setInt(1, orderDetailId);
+            int rows = ps.executeUpdate();
+
+            if (rows > 0) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println(Validate.ANSI_RED + "Lỗi khi hủy món: " + e.getMessage() + Validate.ANSI_RESET);
+        }
+        return false;
+    }
+
+
 }
