@@ -91,7 +91,7 @@ public class RestaurantApplication {
             System.out.println(Validate.ANSI_GREEN + "Đăng nhập thành công" + Validate.ANSI_RESET);
             redirectByRole(user);
         } else {
-            System.out.println(Validate.ANSI_RED + "Sai tài khoản hoặc mật khẩu bị khóa!" + Validate.ANSI_RESET);
+            System.out.println(Validate.ANSI_RED + "Sai thông tin tài khoản hoặc tài khoản đã bị khoá!" + Validate.ANSI_RESET);
         }
     }
 

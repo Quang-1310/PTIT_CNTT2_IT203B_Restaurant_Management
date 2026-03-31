@@ -14,7 +14,7 @@ public class CustomerImpl implements ICustomerDao{
     public List<User> getAllCustomer() {
         List<User> userList = new ArrayList<>();
         String sqlGetAllCustomer = """
-                select * from Users
+                select * from Users where user_role = 'CUSTOMER'
                 """;
 
         try(Connection conn = DBConnection.openConnection();
@@ -85,5 +85,28 @@ public class CustomerImpl implements ICustomerDao{
             System.out.println(Validate.ANSI_RED + "Lỗi" + Validate.ANSI_YELLOW);
         }
         return userList;
+    }
+
+    @Override
+    public boolean banAccount(int id) {
+        String sql = """
+                update Users set is_active = false where user_id = ? and user_role = 'CUSTOMER'
+                """;
+
+        try(Connection conn = DBConnection.openConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)){
+
+            ps.setInt(1, id);
+
+            if(ps.executeUpdate() > 0){
+                return true;
+            }
+            else {
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println(Validate.ANSI_RED + "Lỗi Ban tài khoản" + Validate.ANSI_RESET);
+        }
+        return false;
     }
 }

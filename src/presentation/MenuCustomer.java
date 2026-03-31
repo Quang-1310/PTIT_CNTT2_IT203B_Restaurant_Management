@@ -20,7 +20,7 @@ import static presentation.ShowManagementMenu.*;
 public class MenuCustomer {
     private static MenuItemServiceImpl menuItemService = new MenuItemServiceImpl();
     private static TableServiceImpl tableService = new TableServiceImpl();
-//    private static OrderDetailImpl orderDetailService = new OrderDetailImpl();
+    private static OrderDetailImpl orderDetailService = new OrderDetailImpl();
     private static OrderService orderService = new OrderService();
     private int currentOrderId = 0;
     public void showMenuCustomer(User user){
@@ -59,14 +59,20 @@ public class MenuCustomer {
                     break;
                 case 4:
                     int orderIdToCancel = getOrderIdFromUser(user, "hủy món");
-                    if (orderIdToCancel > 0) cancelItem(orderIdToCancel);
+                    if (orderIdToCancel > 0){
+                        cancelItem(orderIdToCancel);
+                    }
                     break;
                 case 5:
                     int orderIdToTrack = getOrderIdFromUser(user, "theo dõi");
-                    if (orderIdToTrack > 0) viewOrderDetailStatus(orderIdToTrack);
+                    if (orderIdToTrack > 0){
+                        viewOrderDetailStatus(orderIdToTrack);
+                    }
                     break;
                 case 6:
+                    printFinalBill(user);
                     break;
+
                 case 7:
                     boolean flag = false;
                     do{
@@ -332,6 +338,65 @@ public class MenuCustomer {
         return activeOrders.get(choice - 1).getOrderID();
     }
 
+    // Thanh toán
+    private void printFinalBill(User user) {
+        List<Order> activeOrders = orderService.findActiveOrdersByUserId(user.getUserID());
+        if (activeOrders.isEmpty()) {
+            System.out.println(Validate.ANSI_YELLOW + "Bạn không có bàn nào đang hoạt động." + Validate.ANSI_RESET);
+            return;
+        }
+
+        double grandTotal = 0;
+        String dLine = "============================================================";
+        String sLine = "------------------------------------------------------------";
+
+        System.out.println("\n" + dLine);
+        System.out.println("                XÁC NHẬN THANH TOÁN TỔNG                      ");
+        System.out.println(dLine);
+        System.out.printf(" Khách hàng: %-20s | Ngày: %s\n",
+                user.getUserName(),
+                java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+
+        for (Order order : activeOrders) {
+            double tableTotal = 0;
+            System.out.println("\n>>> BÀN SỐ: " + order.getTableId() + " (Đơn: " + order.getOrderID() + ")");
+            System.out.println(sLine);
+            System.out.printf("| %-22s | %-5s | %-23s |\n", "TÊN MÓN", "SL", "ĐƠN GIÁ");
+            System.out.println(sLine);
+
+            List<OrderDetailStatus> items = orderDetailService.getGroupedItemsByOrder(order.getOrderID());
+
+            for (OrderDetailStatus item : items) {
+                tableTotal += (item.getQuantity() * item.getPrice());
+                System.out.printf("| %-22.22s | %-5d | %-23.2f |\n",
+                        item.getItemName(), item.getQuantity(), item.getPrice());
+            }
+
+            System.out.println(sLine);
+            System.out.printf(" TỔNG TIỀN BÀN %-2d: %22.0f VNĐ\n", order.getTableId(), tableTotal);
+            grandTotal += tableTotal;
+        }
+
+        System.out.println("\n" + dLine);
+        System.out.printf(Validate.ANSI_GREEN + " TỔNG TIỀN TẤT CẢ CÁC BÀN: %26.0f VNĐ\n" + Validate.ANSI_RESET, grandTotal);
+        System.out.println(dLine);
+
+        System.out.print("\nXác nhận thanh toán và giải phóng bàn? (1. Có / 2. Quay lại): ");
+        int confirm = InputMethod.getInteger();
+
+        if (confirm == 1) {
+            boolean success = orderService.checkout(user.getUserID(), activeOrders);
+            if (success) {
+                System.out.println(Validate.ANSI_GREEN + "Thanh toán thành công! Cảm ơn quý khách." + Validate.ANSI_RESET);
+                System.out.println(Validate.ANSI_CYAN + "Bàn của bạn đã được giải phóng." + Validate.ANSI_RESET);
+            } else {
+                System.out.println(Validate.ANSI_RED + "Có lỗi xảy ra trong quá trình thanh toán. Vui lòng liên hệ nhân viên." + Validate.ANSI_RESET);
+            }
+        } else {
+            System.out.println(Validate.ANSI_YELLOW + "Đã hủy thao tác thanh toán." + Validate.ANSI_RESET);
+        }
+    }
+
 
     // Bảng menu
     private static void printTableMenuHeader() {
@@ -365,7 +430,7 @@ public class MenuCustomer {
     // Theo dõi trạng thái món ăn
     private static void printStatusItemHeader() {
         System.out.printf("+%s+%s+%s+%s+\n", "-".repeat(12), "-".repeat(27), "-".repeat(12), "-".repeat(17));
-        System.out.printf("| %-10s | %-25s | %-10s | %-15s |\n","Mã món", "Tên món", "Số lượng", "Trạng thái");
+        System.out.printf("| %-10s | %-25s | %-10s | %-15s |\n","STT", "Tên món", "Số lượng", "Trạng thái");
         System.out.printf("+%s+%s+%s+%s+\n", "-".repeat(12), "-".repeat(27), "-".repeat(12), "-".repeat(17));
     }
 

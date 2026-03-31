@@ -133,23 +133,95 @@ public class OrderDetailImpl implements IOrderDetailDao{
 
     @Override
     public boolean cancelItem(int orderDetailId) {
+        String sqlGetInfo = "SELECT item_id, quantity FROM Order_Details WHERE order_detail_id = ? AND item_status = 'PENDING'";
         String sqlDelete = "DELETE FROM Order_Details WHERE order_detail_id = ? AND item_status = 'PENDING'";
+        String sqlUpdateStock = "UPDATE Menu_Items SET stock = stock + ? WHERE item_id = ?";
 
-        try (Connection conn = DBConnection.openConnection();
-             PreparedStatement ps = conn.prepareStatement(sqlDelete)) {
+        Connection conn = null;
+        try {
+            conn = DBConnection.openConnection();
+            conn.setAutoCommit(false);
 
-            ps.setInt(1, orderDetailId);
-            int rows = ps.executeUpdate();
+            int itemId = -1;
+            int quantity = 0;
 
-            if (rows > 0) {
-                return true;
-            } else {
-                return false;
+            try (PreparedStatement psGet = conn.prepareStatement(sqlGetInfo)) {
+                psGet.setInt(1, orderDetailId);
+                ResultSet rs = psGet.executeQuery();
+                if (rs.next()) {
+                    itemId = rs.getInt("item_id");
+                    quantity = rs.getInt("quantity");
+                } else {
+                    conn.rollback();
+                    return false;
+                }
             }
+
+            try (PreparedStatement psDel = conn.prepareStatement(sqlDelete)) {
+                psDel.setInt(1, orderDetailId);
+                int rows = psDel.executeUpdate();
+                if (rows == 0) {
+                    conn.rollback();
+                    return false;
+                }
+            }
+
+            try (PreparedStatement psStock = conn.prepareStatement(sqlUpdateStock)) {
+                psStock.setInt(1, quantity);
+                psStock.setInt(2, itemId);
+                psStock.executeUpdate();
+            }
+
+            conn.commit();
+            return true;
+
         } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    System.out.println("Lỗi");
+                }
+            }
             System.out.println(Validate.ANSI_RED + "Lỗi khi hủy món: " + e.getMessage() + Validate.ANSI_RESET);
+        } finally {
+            try {
+                if (conn != null){
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                System.out.println("Lỗi");
+            }
         }
         return false;
+    }
+
+    @Override
+    public List<OrderDetailStatus> getGroupedItemsByOrder(int orderId) {
+        List<OrderDetailStatus> list = new ArrayList<>();
+        String sql = """
+        SELECT mi.item_name, SUM(od.quantity) as total_qty, od.price_at_order 
+        FROM Order_Details od
+        JOIN Menu_items mi ON od.item_id = mi.item_id
+        WHERE od.order_id = ? AND od.item_status IN ('READY', 'SERVED')
+        GROUP BY mi.item_name, od.price_at_order
+    """;
+
+        try (Connection conn = DBConnection.openConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                OrderDetailStatus item = new OrderDetailStatus();
+                item.setItemName(rs.getString("item_name"));
+                item.setQuantity(rs.getInt("total_qty"));
+                item.setPrice(rs.getDouble("price_at_order"));
+                list.add(item);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
 

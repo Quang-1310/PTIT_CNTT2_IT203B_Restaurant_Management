@@ -18,4 +18,9 @@ public class CustomerService implements ICustomerDao {
     public List<User> findCustomerByName(String name) {
         return customerDao.findCustomerByName(name);
     }
+
+    @Override
+    public boolean banAccount(int id) {
+        return customerDao.banAccount(id);
+    }
 }

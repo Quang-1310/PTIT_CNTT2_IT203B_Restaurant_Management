@@ -2,9 +2,12 @@ package business.dao;
 
 import model.entity.Order;
 import model.entity.Order_Detail;
+import model.enums.StatusOrderDetail;
 import util.DBConnection;
+import validate.Validate;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,5 +95,47 @@ public class OrderImpl implements IOrderDao{
         return activeOrders;
     }
 
+    public boolean completePayment(int userId, List<Integer> orderIds) {
+        String sqlUpdateOrders = "UPDATE Orders SET status = 'PAID' WHERE order_id = ?";
+        String sqlUpdateTables = "UPDATE Tables SET status = 'FREE' WHERE table_id = (SELECT table_id FROM Orders WHERE order_id = ?)";
+
+        Connection conn = null;
+        try {
+            conn = DBConnection.openConnection();
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement psOrder = conn.prepareStatement(sqlUpdateOrders);
+                 PreparedStatement psTable = conn.prepareStatement(sqlUpdateTables)) {
+
+                for (int orderId : orderIds) {
+                    psOrder.setInt(1, orderId);
+                    psOrder.addBatch();
+
+                    psTable.setInt(1, orderId);
+                    psTable.addBatch();
+                }
+
+                psOrder.executeBatch();
+                psTable.executeBatch();
+
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                e.printStackTrace();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (conn != null){
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                System.out.println(Validate.ANSI_RED + "Lỗi" + Validate.ANSI_RESET);
+            }
+        }
+        return false;
+    }
 
 }

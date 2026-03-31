@@ -16,7 +16,8 @@ public class ShowManagementCustomer {
                 ================== MANAGEMENT CUSTOMER ====================
                 |1. Xem danh sách khách hàng                              |
                 |2. Tìm kiếm khách hàng                                   |
-                |3. Thoát                                                 |
+                |3. Khoá tài khoản                                        |
+                |4. Thoát                                                 |
                 ===========================================================
                 """);
 
@@ -30,6 +31,9 @@ public class ShowManagementCustomer {
                     findUserByName();
                     break;
                 case 3:
+                    banAcount();
+                    break;
+                case 4:
                     boolean flag = false;
                     do{
                         System.out.println("Xác nhận thoát:");
@@ -60,7 +64,7 @@ public class ShowManagementCustomer {
                     System.out.println("Lựa chọn không hợp lệ");
 
             }
-        }while(choice != 3);
+        }while(choice != 4);
     }
 
     public static void getAllCustomer(){
@@ -100,6 +104,26 @@ public class ShowManagementCustomer {
         }
         printTableCustomerFooter();
 
+    }
+
+    private static void banAcount(){
+        do {
+            System.out.print("Nhập ID tài khoản muốn cấm: ");
+            int id = InputMethod.getInteger();
+            if(id <= 0){
+                System.out.println(Validate.ANSI_RED + "ID không hợp lệ" + Validate.ANSI_RESET);
+                return;
+            }
+
+            if(customerService.banAccount(id)){
+                System.out.println(Validate.ANSI_GREEN + "Ban tài khoản thành công" + Validate.ANSI_RESET);
+                break;
+            }
+            else {
+                System.out.println(Validate.ANSI_YELLOW + "Ban tài khoản thất bại. Không tìm thấy tài khoản" + Validate.ANSI_RESET);
+                break;
+            }
+        }while(true);
     }
 
     private static void printTableCustomerHeader() {

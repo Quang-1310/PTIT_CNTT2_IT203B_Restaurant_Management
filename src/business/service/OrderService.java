@@ -73,4 +73,16 @@ public class OrderService implements IOrderService{
         return orderDao.findActiveOrdersByUserId(userId);
     }
 
+    @Override
+    public List<OrderDetailStatus> getGroupedItemsByOrder(int orderId) {
+        return orderDetailDao.getGroupedItemsByOrder(orderId);
+    }
+
+    @Override
+    public boolean checkout(int userId, List<Order> activeOrders) {
+        List<Integer> orderIds = activeOrders.stream()
+                .map(Order::getOrderID)
+                .toList();
+        return orderDao.completePayment(userId, orderIds);
+    }
 }

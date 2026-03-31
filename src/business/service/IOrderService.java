@@ -19,4 +19,8 @@ public interface IOrderService {
     int findActiveOrderIdByUserId(int userId);
 
     List<Order> findActiveOrdersByUserId(int userId);
+
+    List<OrderDetailStatus> getGroupedItemsByOrder(int orderId);
+
+    boolean checkout(int userId, List<Order> activeOrders);
 }
